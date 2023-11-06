@@ -1,11 +1,9 @@
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine, MetaData
 
-URL_DATABASE = ""
+URL_DATABASE = "mysql+pymysql://root:password@localhost:3306/smartfinance_db"
 
-engine = create_engine(URL_DATABASE)
+engine = create_engine(URL_DATABASE).execution_options(isolation_level="AUTOCOMMIT")
 
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-Base = declarative_base()
+meta = MetaData()
+ 
+conn = engine.connect()
