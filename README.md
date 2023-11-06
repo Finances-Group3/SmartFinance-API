@@ -2,6 +2,8 @@
 
 ## Instrucciones
 
+Instalar las dependencias con el siguiente comando:
+
 ``` bash
 pip install fastapi uvicorn sqlalchemy pymysql
 ```
