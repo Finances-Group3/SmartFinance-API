@@ -10,7 +10,7 @@ pip install fastapi uvicorn sqlalchemy pymysql cryptography
 
 Tener instalado mysql y revisar el db.py para configurar la conexión a la base de datos.
 
-Para ejecutat el servidor:
+Para ejecutar el servidor:
 
 ``` bash
 uvicorn main:app --reload
