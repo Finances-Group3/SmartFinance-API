@@ -6,7 +6,6 @@ from typing import List
 
 bank = APIRouter()
 
-
 @bank.get("/banks", response_model=List[Bank], tags=["Banks"])
 def get_all_banks():
     return conn.execute(banks.select()).fetchall()
