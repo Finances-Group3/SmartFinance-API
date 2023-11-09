@@ -16,3 +16,5 @@ app = FastAPI(
 app.include_router(bank)
 app.include_router(user)
 app.include_router(payment_plan)
+
+
