@@ -5,7 +5,7 @@
 Instalar las dependencias con el siguiente comando:
 
 ``` bash
-pip install fastapi uvicorn sqlalchemy pymysql
+pip install fastapi uvicorn sqlalchemy pymysql cryptography
 ```
 
 Tener instalado mysql y revisar el db.py para configurar la conexión a la base de datos.
