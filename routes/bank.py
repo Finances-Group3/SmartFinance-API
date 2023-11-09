@@ -13,7 +13,7 @@ def get_all_banks():
 
 @bank.post("/banks", response_model=Bank, tags=["Banks"])
 def create_bank(bank: Bank):
-    new_bank = {"name": bank.name}
+    new_bank = {"name": bank.name, "image_url": bank.image_url}
     result = conn.execute(banks.insert().values(new_bank))
     return conn.execute(banks.select().where(banks.c.id == result.lastrowid)).first()
 
@@ -29,7 +29,9 @@ def get_bank(id: int):
 
 @bank.put("/banks/{id}", response_model=Bank, tags=["Banks"])
 def update_bank(id: int, bank: Bank):
-    conn.execute(banks.update().where(banks.c.id == id).values(name=bank.name))
+    conn.execute(
+        banks.update().where(banks.c.id == id).values(name=bank.name, image_url=bank.image_url)
+    )
     return conn.execute(banks.select().where(banks.c.id == id)).first()
 
 @bank.delete("/banks/{id}", status_code=status.HTTP_204_NO_CONTENT, tags=["Banks"])
