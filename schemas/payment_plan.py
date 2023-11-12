@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional
-from enum import Enum
+from enums.curency_enum import CurrencyEnum
 from sqlalchemy.orm import relationship
 
 class PaymentPlan(BaseModel):
@@ -8,9 +8,7 @@ class PaymentPlan(BaseModel):
     name: str
     vehicle_price: float
     initial_fee: float
-
-    # no se si agregar su propio modelo aa currency
-    currency: str 
+    currency: CurrencyEnum = CurrencyEnum.PEN
     payment_periods: int
     parcial_grace_periods: int
     total_grace_periods:int

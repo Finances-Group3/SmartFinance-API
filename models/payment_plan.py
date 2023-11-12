@@ -10,7 +10,7 @@ payment_plans = Table(
     Column("name", String(255)),
     Column("vehicle_price", Float),
     Column("initial_fee", Float),
-    Column("currency", String(10)),
+    Column("currency", String(5)),
     Column("payment_periods", Integer),
     Column("parcial_grace_periods", Integer),
     Column("total_grace_periods", Integer),
