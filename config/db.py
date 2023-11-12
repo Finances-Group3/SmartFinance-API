@@ -6,4 +6,6 @@ engine = create_engine(URL_DATABASE).execution_options(isolation_level="AUTOCOMM
 
 meta = MetaData()
  
+meta.create_all(engine)
+
 conn = engine.connect()

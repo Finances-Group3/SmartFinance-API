@@ -5,7 +5,8 @@ from config.db import meta, engine
 banks = Table("banks", 
     meta, 
     Column("id", Integer, primary_key=True),
-    Column("name", String(30))
+    Column("name", String(30)),
+    Column("image_url", String(255))
 )
 
 meta.create_all(engine)
