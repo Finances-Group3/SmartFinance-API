@@ -2,10 +2,17 @@ from fastapi import APIRouter, HTTPException, status
 from config.db import conn
 from models.payment_plan import payment_plans
 from models.bank import banks
+import algorithms
 
 from schemas.payment_plan import PaymentPlan
 from typing import List
 
+
+def check_bank_exists(bank_id: int):
+    bank = conn.execute(banks.select().where(banks.c.id == bank_id)).first()
+    if bank is None:
+        return False
+    return True
 
 
 payment_plan = APIRouter()
@@ -17,14 +24,14 @@ def get_all_payment_plans():
     return conn.execute(payment_plans.select()).fetchall()
 
 
-def check_bank_exists(bank_id: int):
-    bank = conn.execute(banks.select().where(banks.c.id == bank_id)).first()
-    if bank is None:
-        return False
-    return True
-
 @payment_plan.post("/payment_plans", response_model=PaymentPlan, tags=["Payment Plans"])
 def create_payment_plan(payment_plan: PaymentPlan):
+
+    if payment_plan.vehicle_price <= 0.0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Vehicle price cannot be zero or negative",
+        )
 
     if not check_bank_exists(payment_plan.bank_id):
         raise HTTPException(
@@ -32,12 +39,29 @@ def create_payment_plan(payment_plan: PaymentPlan):
             detail="Bank ID does not exist in the database",
         )
 
+    if payment_plan.TNA == 0.0 and payment_plan.TEA == 0.0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="TNA and TEA cannot be zero, fill one of them",
+        )
+    
+    if payment_plan.TNA != 0.0 and payment_plan.TEA != 0.0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="TNA and TEA cannot be filled at the same time, fill only one of them",
+        )
+    
+    if payment_plan.TNA != 0.0:
+        TEA = algorithms.from_TNA_to_TEA(payment_plan.TNA)
+        payment_plan.TEA = TEA
+
     new_payment_plan = {
         "name": payment_plan.name,
         "vehicle_price": payment_plan.vehicle_price,
         "initial_fee": payment_plan.initial_fee,
         "currency": payment_plan.currency,
-        "payment_periods": payment_plan.payment_periods,
+        "anual_payment_periods": payment_plan.anual_payment_periods,
+        "payment_frequency": payment_plan.payment_frequency,
         "parcial_grace_periods": payment_plan.parcial_grace_periods,
         "total_grace_periods": payment_plan.total_grace_periods,
         "TEA": payment_plan.TEA,
@@ -98,7 +122,8 @@ def update_payment_plan(id: int, payment_plan: PaymentPlan):
             vehicle_price=payment_plan.vehicle_price,
             initial_fee=payment_plan.initial_fee,
             currency=payment_plan.currency,
-            payment_periods=payment_plan.payment_periods,
+            anual_payment_periods=payment_plan.anual_payment_periods,
+            payment_frequency=payment_plan.payment_frequency,
             parcial_grace_periods=payment_plan.parcial_grace_periods,
             total_grace_periods=payment_plan.total_grace_periods,
             TEA=payment_plan.TEA,
