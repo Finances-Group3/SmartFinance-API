@@ -18,6 +18,8 @@ app.include_router(bank)
 app.include_router(user)
 app.include_router(payment_plan)
 
+
 @app.get("/", include_in_schema=False)
 async def root():
     return RedirectResponse(url="/docs", status_code=status.HTTP_303_SEE_OTHER)
+
