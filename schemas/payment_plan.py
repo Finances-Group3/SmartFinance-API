@@ -19,11 +19,11 @@ class PaymentPlan(BaseModel):
     bank_id: int
     user_id: int
     funding_amount: float
-    total_periods: int
-    changed_TEA: float
+    total_periods: int # total_periods = anual_payment_periods * 12/payment_frequency
+    changed_TE: float
     fixed_fee: float
-    desgravamen_insurance: float
-    vehicle_insurance: float
+    desgravamen_insurance_amount: float
+    vehicle_insurance_amount: float
 
 
 class payment_detail:

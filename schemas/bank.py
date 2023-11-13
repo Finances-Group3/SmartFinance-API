@@ -5,5 +5,5 @@ class Bank(BaseModel):
     id: int
     name: str
     image_url: str
-    porcentaje_seguro_desgravamen: float
-    porcentaje_seguro_vehicular: float
+    anual_desgravamen_insurance_percent: float
+    anual_vehicle_insurance_percent: float

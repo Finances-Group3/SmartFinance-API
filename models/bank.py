@@ -8,8 +8,8 @@ banks = Table(
     Column("id", Integer, primary_key=True),
     Column("name", String(255)),
     Column("image_url", String(255)),
-    Column("porcentaje_seguro_desgravamen", Float),
-    Column("porcentaje_seguro_vehicular", Float),
+    Column("anual_desgravamen_insurance_percent", Float),
+    Column("anual_vehicle_insurance_percent", Float),
 )
 
 meta.create_all(engine)
