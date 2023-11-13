@@ -14,7 +14,6 @@ def check_bank_exists(bank_id: int):
         return False
     return True
 
-
 payment_plan = APIRouter()
 
 @payment_plan.get(
@@ -147,3 +146,4 @@ def delete_payment_plan(id: int):
             status_code=status.HTTP_404_NOT_FOUND, detail="Payment Plan not found"
         )
     return {"message": "Payment Plan with id {} deleted successfully!".format(id)}
+

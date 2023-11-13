@@ -18,4 +18,18 @@ class PaymentPlan(BaseModel):
     TNA: float = 0.0
     bank_id: int
     user_id: int
+    funding_amount: float
+    total_periods: int
+    changed_TEA: float
+    fixed_fee: float
+    desgravamen_insurance: float
+    vehicle_insurance: float
 
+
+class payment_detail:
+    cuota_fija: float
+    interes: float
+    pago_seguro_desgravamen: float
+    pago_seguro_vehicular: float
+    amortizacion: float
+    saldo: float
