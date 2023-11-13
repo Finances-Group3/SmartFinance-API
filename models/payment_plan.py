@@ -12,7 +12,7 @@ payment_plans = Table(
     Column("id", Integer, primary_key=True),
     Column("name", String(255)),
     Column("vehicle_price", Float),
-    Column("initial_fee", Float),
+    Column("initial_fee_percent", Float),
     Column("currency", String(5)),
     Column("anual_payment_periods", Integer),
     Column("payment_frequency", Enum(PaymentFrequencyEnum), nullable=False),
@@ -26,7 +26,7 @@ payment_plans = Table(
     Column("total_periods", Integer),
     Column("changed_TE", Float),
     Column("fixed_fee", Float),
-    Column("desgravamen_insurance_amount", Float),
+    Column("desgravamen_percent_by_freq", Float),
     Column("vehicle_insurance_amount", Float),
 )
 

@@ -1,14 +1,13 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from typing import Optional
 from enums.curency_enum import CurrencyEnum
-from sqlalchemy.orm import relationship
 from enums.payment_frequency import PaymentFrequencyEnum 
 
 class PaymentPlan(BaseModel):
     id: int
     name: str
     vehicle_price: float
-    initial_fee: float
+    initial_fee_percent: float
     currency: CurrencyEnum = CurrencyEnum.PEN
     anual_payment_periods: int
     payment_frequency: PaymentFrequencyEnum = PaymentFrequencyEnum.MENSUAL
@@ -20,10 +19,17 @@ class PaymentPlan(BaseModel):
     user_id: int
     funding_amount: float
     total_periods: int # total_periods = anual_payment_periods * 12/payment_frequency
-    changed_TE: float
+    changed_TE: float 
     fixed_fee: float
+    desgravamen_percent_by_freq: float = 0.0
     desgravamen_insurance_amount: float
     vehicle_insurance_amount: float
+
+    @validator('TEA', 'TNA', 'initial_fee_percent', 'changed_TE', 'desgravamen_percent_by_freq', pre=True)
+    def validate_float_precision(cls, value):
+        return round(value, 12)
+      
+            
 
 
 class payment_detail:

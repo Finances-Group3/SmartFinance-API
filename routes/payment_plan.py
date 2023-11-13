@@ -61,7 +61,7 @@ def create_payment_plan(payment_plan: PaymentPlan):
         TEA = algorithms.from_TNA_to_TEA(payment_plan.TNA)
         payment_plan.TEA = TEA
 
-    payment_plan.funding_amount = (1 - payment_plan.initial_fee) * payment_plan.vehicle_price
+    payment_plan.funding_amount = (1 - payment_plan.initial_fee_percent) * payment_plan.vehicle_price
     
     payment_plan.total_periods = payment_plan.anual_payment_periods * (
         12 / payment_plan.payment_frequency
@@ -70,15 +70,13 @@ def create_payment_plan(payment_plan: PaymentPlan):
     payment_plan.changed_TE = algorithms.changing_TE(
         payment_plan.TEA, payment_plan.payment_frequency
     )
+    
+    bank_desgravamen_percent = get_degravamen_percent(payment_plan.bank_id)
+
+    payment_plan.desgravamen_percent_by_freq = (bank_desgravamen_percent * (payment_plan.payment_frequency / 12))
 
     payment_plan.fixed_fee = algorithms.get_fixed_fee(
-        payment_plan.funding_amount, payment_plan.changed_TE, payment_plan.total_periods
-    )
-
-    desgravamen_percent = get_degravamen_percent(payment_plan.bank_id)
- 
-    payment_plan.desgravamen_insurance_amount = algorithms.get_desgravamen_insurance_amount(
-        desgravamen_percent, payment_plan.funding_amount, payment_plan.payment_frequency
+        payment_plan.funding_amount, payment_plan.changed_TE, payment_plan.total_periods, payment_plan.desgravamen_percent_by_freq
     )
 
     vehicle_insurance_percent = get_vehicle_insurance_percent(payment_plan.bank_id)
@@ -90,7 +88,7 @@ def create_payment_plan(payment_plan: PaymentPlan):
     new_payment_plan = {
         "name": payment_plan.name,
         "vehicle_price": payment_plan.vehicle_price,
-        "initial_fee": payment_plan.initial_fee,
+        "initial_fee_percent": payment_plan.initial_fee_percent,
         "currency": payment_plan.currency,
         "anual_payment_periods": payment_plan.anual_payment_periods,
         "payment_frequency": payment_plan.payment_frequency,
@@ -104,7 +102,7 @@ def create_payment_plan(payment_plan: PaymentPlan):
         "total_periods": payment_plan.total_periods,
         "changed_TE": payment_plan.changed_TE,
         "fixed_fee": payment_plan.fixed_fee,
-        "desgravamen_insurance_amount": payment_plan.desgravamen_insurance_amount,
+        "desgravamen_percent_by_freq": payment_plan.desgravamen_percent_by_freq,
         "vehicle_insurance_amount": payment_plan.vehicle_insurance_amount,
     }
 
@@ -170,7 +168,7 @@ def update_payment_plan(id: int, payment_plan: PaymentPlan):
         .values(
             name=payment_plan.name,
             vehicle_price=payment_plan.vehicle_price,
-            initial_fee=payment_plan.initial_fee,
+            initial_fee_percent=payment_plan.initial_fee_percent,
             currency=payment_plan.currency,
             anual_payment_periods=payment_plan.anual_payment_periods,
             payment_frequency=payment_plan.payment_frequency,
