@@ -6,6 +6,7 @@ from typing import List
 
 bank = APIRouter()
 
+
 @bank.get("/banks", response_model=List[Bank], tags=["Banks"])
 def get_all_banks():
     return conn.execute(banks.select()).fetchall()
@@ -13,7 +14,12 @@ def get_all_banks():
 
 @bank.post("/banks", response_model=Bank, tags=["Banks"])
 def create_bank(bank: Bank):
-    new_bank = {"name": bank.name, "image_url": bank.image_url}
+    new_bank = {
+        "name": bank.name,
+        "image_url": bank.image_url,
+        "anual_desgravamen_insurance_percent": bank.anual_desgravamen_insurance_percent,
+        "anual_vehicle_insurance_percent": bank.anual_vehicle_insurance_percent,
+    }
     result = conn.execute(banks.insert().values(new_bank))
     return conn.execute(banks.select().where(banks.c.id == result.lastrowid)).first()
 
@@ -27,12 +33,19 @@ def get_bank(id: int):
         )
     return bank
 
+
 @bank.put("/banks/{id}", response_model=Bank, tags=["Banks"])
 def update_bank(id: int, bank: Bank):
     conn.execute(
-        banks.update().where(banks.c.id == id).values(name=bank.name, image_url=bank.image_url)
+        banks.update().where(banks.c.id == id).values(
+            name=bank.name,
+            image_url=bank.image_url,
+            anual_desgravamen_insurance_percent=bank.anual_desgravamen_insurance_percent,
+            anual_vehicle_insurance_percent=bank.anual_vehicle_insurance_percent,
+        )
     )
     return conn.execute(banks.select().where(banks.c.id == id)).first()
+
 
 @bank.delete("/banks/{id}", status_code=status.HTTP_204_NO_CONTENT, tags=["Banks"])
 def delete_bank(id: int):

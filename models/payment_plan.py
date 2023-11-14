@@ -12,7 +12,7 @@ payment_plans = Table(
     Column("id", Integer, primary_key=True),
     Column("name", String(255)),
     Column("vehicle_price", Float),
-    Column("initial_fee", Float),
+    Column("initial_fee_percent", Float),
     Column("currency", String(5)),
     Column("anual_payment_periods", Integer),
     Column("payment_frequency", Enum(PaymentFrequencyEnum), nullable=False),
@@ -22,6 +22,12 @@ payment_plans = Table(
     Column("TNA", Float, default=0.0),
     Column("bank_id", Integer, ForeignKey("banks.id")),
     Column("user_id", Integer, ForeignKey("users.id")),
+    Column("funding_amount", Float),
+    Column("total_periods", Integer),
+    Column("changed_TE", Float),
+    Column("fixed_fee", Float),
+    Column("desgravamen_percent_by_freq", Float),
+    Column("vehicle_insurance_amount", Float),
 )
 
 meta.create_all(engine)
