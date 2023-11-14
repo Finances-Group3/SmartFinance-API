@@ -15,6 +15,28 @@ def check_bank_exists(bank_id: int):
     return True
 
 
+def check_grace_periods(
+    total_periods: int, total_grace_periods: int, parcial_grace_periods: int
+):
+    if parcial_grace_periods > total_periods / 3:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Parcial grace periods cannot be greater than 1/3 of total periods",
+        )
+
+    if total_grace_periods > total_periods / 3:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Total grace periods cannot be greater than 1/3 of total periods",
+        )
+
+    if total_grace_periods + parcial_grace_periods > total_periods / 3:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Total grace periods plus parcial grace periods cannot be greater than 1/3 of total periods",
+        )
+
+
 def get_degravamen_percent(bank_id: int):
     bank = conn.execute(banks.select().where(banks.c.id == bank_id)).first()
     return bank.anual_desgravamen_insurance_percent
@@ -73,6 +95,12 @@ def create_payment_plan(payment_plan: PaymentPlan):
         12 / payment_plan.payment_frequency
     )
 
+    check_grace_periods(
+        payment_plan.total_periods,
+        payment_plan.total_grace_periods,
+        payment_plan.parcial_grace_periods,
+    )
+
     payment_plan.changed_TE = algorithms.changing_TE(
         payment_plan.TEA, payment_plan.payment_frequency
     )
@@ -82,10 +110,6 @@ def create_payment_plan(payment_plan: PaymentPlan):
     payment_plan.desgravamen_percent_by_freq = bank_desgravamen_percent * (
         payment_plan.payment_frequency / 12
     )
-
-    # payment_plan.fixed_fee = algorithms.get_fixed_fee(
-    #     payment_plan.funding_amount, payment_plan.changed_TE, payment_plan.total_periods, payment_plan.desgravamen_percent_by_freq
-    # )
 
     payment_plan.fixed_fee = algorithms.get_fixed_fee_pg(
         payment_plan.funding_amount,
