@@ -22,20 +22,9 @@ class PaymentPlan(BaseModel):
     changed_TE: float 
     fixed_fee: float
     desgravamen_percent_by_freq: float = 0.0
-    desgravamen_insurance_amount: float
     vehicle_insurance_amount: float
 
     @validator('TEA', 'TNA', 'initial_fee_percent', 'changed_TE', 'desgravamen_percent_by_freq', pre=True)
     def validate_float_precision(cls, value):
         return round(value, 12)
-      
-            
-
-
-class payment_detail:
-    cuota_fija: float
-    interes: float
-    pago_seguro_desgravamen: float
-    pago_seguro_vehicular: float
-    amortizacion: float
-    saldo: float
+        
