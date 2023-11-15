@@ -1,3 +1,5 @@
+from schemas.payment_detail import PaymentDetail
+
 # Cambios de tasa de interes
 def from_TNA_to_TEA(tasa_nominal):
     tasa_efectiva_anual = (1 + tasa_nominal / (12*30)) ** (360) - 1
@@ -16,9 +18,9 @@ def get_desgravamen_insurance_amount(desgravamen_percent, funding_amount, period
     desgravamen_amount = desgravamen_percent * funding_amount * period_frequency
     return desgravamen_amount
 
-def get_vehicle_insurance_amount(vehicle_insurance_percent, vehicle_price, period_frequency):
-    vehicule_insurance = vehicle_price * (vehicle_insurance_percent/(12/period_frequency))
-    return vehicule_insurance
+def get_vehicle_insurance_amount(anual_vehicle_insurance_percent, vehicle_price, period_frequency):
+    vehicle_insurance = vehicle_price * (anual_vehicle_insurance_percent/(12/period_frequency))
+    return vehicle_insurance
 
 # Hallar cuota fija del metodo frances
 def get_fixed_fee(funding_amount, tasa_efectiva, total_periods, desgravamen_insurance_percent):
@@ -48,7 +50,6 @@ def get_fixed_fee_pg(
 
 
 
-from schemas.payment_plan import PaymentDetail
 # Hallar todos los flujos
 def get_all_flujos(
     nro_cuota,
@@ -61,6 +62,7 @@ def get_all_flujos(
     vehicular_insurance_amount,
     pg_total=0,
     pg_parcial=0,
+    _portes = 0
 ):
     saldo_inicial = funding_amount
     interes = saldo_inicial * changed_TE
@@ -68,7 +70,7 @@ def get_all_flujos(
     pago_seguro_desgravamen = saldo_inicial * degravamen_percent
     amortizacion = cuota_fija - interes - pago_seguro_desgravamen
     pago_seguro_vehicular = vehicular_insurance_amount
-    portes = 10
+    portes = _portes
     saldo_final = saldo_inicial - amortizacion
     flujo = cuota_fija + pago_seguro_vehicular + portes
 
@@ -81,7 +83,6 @@ def get_all_flujos(
         pago_seguro_desgravamen = saldo_inicial * degravamen_percent
         amortizacion = 0
         pago_seguro_vehicular = vehicular_insurance_amount
-        portes = 10
         saldo_final = saldo_inicial + interes
         flujo = cuota_fija + pago_seguro_desgravamen + pago_seguro_vehicular + portes
 
@@ -121,7 +122,6 @@ def get_all_flujos(
         pago_seguro_desgravamen = saldo_inicial * degravamen_percent
         amortizacion = 0
         pago_seguro_vehicular = vehicular_insurance_amount
-        portes = 10
         saldo_final = saldo_inicial
         flujo = cuota_fija + pago_seguro_desgravamen + pago_seguro_vehicular + portes
 

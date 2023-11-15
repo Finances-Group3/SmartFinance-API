@@ -28,6 +28,7 @@ payment_plans = Table(
     Column("fixed_fee", Float),
     Column("desgravamen_percent_by_freq", Float),
     Column("vehicle_insurance_amount", Float),
+    Column("physical_account_statement", Integer, default=0),
 )
 
 meta.create_all(engine)
