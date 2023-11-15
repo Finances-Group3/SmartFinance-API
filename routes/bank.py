@@ -17,8 +17,10 @@ def create_bank(bank: Bank):
     new_bank = {
         "name": bank.name,
         "image_url": bank.image_url,
+        "TEA": bank.TEA,
         "anual_desgravamen_insurance_percent": bank.anual_desgravamen_insurance_percent,
         "anual_vehicle_insurance_percent": bank.anual_vehicle_insurance_percent,
+        "oficial_page": bank.oficial_page,
     }
     result = conn.execute(banks.insert().values(new_bank))
     return conn.execute(banks.select().where(banks.c.id == result.lastrowid)).first()
@@ -40,8 +42,10 @@ def update_bank(id: int, bank: Bank):
         banks.update().where(banks.c.id == id).values(
             name=bank.name,
             image_url=bank.image_url,
+            TEA=bank.TEA,
             anual_desgravamen_insurance_percent=bank.anual_desgravamen_insurance_percent,
             anual_vehicle_insurance_percent=bank.anual_vehicle_insurance_percent,
+            oficial_page=bank.oficial_page,
         )
     )
     return conn.execute(banks.select().where(banks.c.id == id)).first()
