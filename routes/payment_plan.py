@@ -7,7 +7,6 @@ import algorithms
 from schemas.payment_plan import PaymentPlan
 from typing import List
 
-
 def check_bank_exists(bank_id: int):
     bank = conn.execute(banks.select().where(banks.c.id == bank_id)).first()
     if bank is None:

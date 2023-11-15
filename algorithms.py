@@ -1,3 +1,5 @@
+from schemas.payment_detail import PaymentDetail
+
 # Cambios de tasa de interes
 def from_TNA_to_TEA(tasa_nominal):
     tasa_efectiva_anual = (1 + tasa_nominal / (12*30)) ** (360) - 1
@@ -48,7 +50,6 @@ def get_fixed_fee_pg(
 
 
 
-from schemas.payment_plan import PaymentDetail
 # Hallar todos los flujos
 def get_all_flujos(
     nro_cuota,
