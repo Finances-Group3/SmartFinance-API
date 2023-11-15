@@ -22,6 +22,7 @@ class PaymentPlan(BaseModel):
     fixed_fee: float = 0.0
     desgravamen_percent_by_freq: float = 0.0
     vehicle_insurance_amount: float = 0.0
+    physical_account_statement: bool = False
 
     @validator('TEA', 'TNA', 'initial_fee_percent', 'changed_TE', 'desgravamen_percent_by_freq', pre=True)
     def validate_float_precision(cls, value):

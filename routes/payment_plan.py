@@ -13,7 +13,6 @@ def check_bank_exists(bank_id: int):
         return False
     return True
 
-
 def check_grace_periods(
     total_periods: int, total_grace_periods: int, parcial_grace_periods: int
 ):
@@ -35,16 +34,21 @@ def check_grace_periods(
             detail="Total grace periods plus parcial grace periods cannot be greater than 1/3 of total periods",
         )
 
+def get_bank_TEA(bank_id: int):
+    bank = conn.execute(banks.select().where(banks.c.id == bank_id)).first()
+    return bank.TEA
 
 def get_degravamen_percent(bank_id: int):
     bank = conn.execute(banks.select().where(banks.c.id == bank_id)).first()
     return bank.anual_desgravamen_insurance_percent
 
+def get_portes(bank_id: int):
+    bank = conn.execute(banks.select().where(banks.c.id == bank_id)).first()
+    return bank.portes
 
 def get_vehicle_insurance_percent(bank_id: int):
     bank = conn.execute(banks.select().where(banks.c.id == bank_id)).first()
     return bank.anual_vehicle_insurance_percent
-
 
 payment_plan = APIRouter()
 
@@ -94,6 +98,10 @@ def create_payment_plan(payment_plan: PaymentPlan):
         12 / payment_plan.payment_frequency
     )
 
+    bank_TEA = get_bank_TEA(payment_plan.bank_id)
+    if bank_TEA != 0.0:
+        payment_plan.TEA = bank_TEA
+
     check_grace_periods(
         payment_plan.total_periods,
         payment_plan.total_grace_periods,
@@ -121,12 +129,14 @@ def create_payment_plan(payment_plan: PaymentPlan):
 
     vehicle_insurance_percent = get_vehicle_insurance_percent(payment_plan.bank_id)
 
+
     payment_plan.vehicle_insurance_amount = algorithms.get_vehicle_insurance_amount(
         vehicle_insurance_percent,
         payment_plan.vehicle_price,
         payment_plan.payment_frequency,
     )
 
+    
     new_payment_plan = {
         "name": payment_plan.name,
         "vehicle_price": payment_plan.vehicle_price,
@@ -146,6 +156,7 @@ def create_payment_plan(payment_plan: PaymentPlan):
         "fixed_fee": payment_plan.fixed_fee,
         "desgravamen_percent_by_freq": payment_plan.desgravamen_percent_by_freq,
         "vehicle_insurance_amount": payment_plan.vehicle_insurance_amount,
+        "physical_account_statement": payment_plan.physical_account_statement,
     }
 
     result = conn.execute(payment_plans.insert().values(new_payment_plan))
@@ -249,6 +260,12 @@ def get_payment_details(id: int):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Payment Plan not found"
         )
+    
+    if payment_plan.physical_account_statement:
+        portes = get_portes(payment_plan.bank_id)
+    else:
+        portes = 0
+
     payment_details = algorithms.get_all_flujos(
         0,
         [],
@@ -260,5 +277,6 @@ def get_payment_details(id: int):
         payment_plan.vehicle_insurance_amount,
         payment_plan.total_grace_periods,
         payment_plan.parcial_grace_periods,
+        portes
     )
     return payment_details
