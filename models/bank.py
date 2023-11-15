@@ -9,6 +9,7 @@ banks = Table(
     Column("name", String(255)),
     Column("image_url", String(255)),
     Column("TEA", Float),
+    Column("portes", Integer),
     Column("anual_desgravamen_insurance_percent", Float),
     Column("anual_vehicle_insurance_percent", Float),
     Column("oficial_page", String(255)),
