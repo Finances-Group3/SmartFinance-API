@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException, Depends, status
 from fastapi.responses import RedirectResponse
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Annotated
 from sqlalchemy.orm import Session
@@ -14,10 +15,22 @@ app = FastAPI(
     version="0.1.0"
 )
 
+origins = [
+    "http://localhost",
+    "http://localhost:4200",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 app.include_router(bank)
 app.include_router(user)
 app.include_router(payment_plan)
-
 
 @app.get("/", include_in_schema=False)
 async def root():
