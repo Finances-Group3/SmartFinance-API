@@ -1,3 +1,4 @@
+import logging
 from fastapi import APIRouter, HTTPException, status
 from config.db import conn
 from models.bank import banks
@@ -12,9 +13,11 @@ def get_all_banks():
     try:
         with conn.begin() as transaction:
             result = conn.execute(banks.select()).fetchall()
-        return result
+        return result or []  # Devuelve una lista vacía si result es None
     except Exception as e:
-        print(f"Error: {e}")
+        # Log the error
+        logging.error(f"An unhandled error occurred: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
 
 @bank.post("/banks", response_model=Bank, tags=["Banks"])
 def create_bank(bank: Bank):
