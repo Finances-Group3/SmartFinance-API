@@ -9,8 +9,12 @@ bank = APIRouter()
 
 @bank.get("/banks", response_model=List[Bank], tags=["Banks"])
 def get_all_banks():
-    return conn.execute(banks.select()).fetchall()
-
+    try:
+        with conn.begin() as transaction:
+            result = conn.execute(banks.select()).fetchall()
+        return result
+    except Exception as e:
+        print(f"Error: {e}")
 
 @bank.post("/banks", response_model=Bank, tags=["Banks"])
 def create_bank(bank: Bank):
@@ -40,7 +44,9 @@ def get_bank(id: int):
 @bank.put("/banks/{id}", response_model=Bank, tags=["Banks"])
 def update_bank(id: int, bank: Bank):
     conn.execute(
-        banks.update().where(banks.c.id == id).values(
+        banks.update()
+        .where(banks.c.id == id)
+        .values(
             name=bank.name,
             image_url=bank.image_url,
             TEA=bank.TEA,
