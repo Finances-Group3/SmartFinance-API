@@ -1,5 +1,4 @@
 from sqlalchemy import create_engine, MetaData
-
 from starlette.config import Config
 
 config = Config(".env")
