@@ -14,7 +14,7 @@ URL_DATABASE = f"mysql+pymysql://{_user}:{_password}@{_host}:{_port}/{_database}
 engine = create_engine(URL_DATABASE).execution_options(isolation_level="AUTOCOMMIT")
 
 meta = MetaData()
- 
+
 meta.create_all(engine)
 
 conn = engine.connect()
