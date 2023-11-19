@@ -68,3 +68,18 @@ def delete_user(id: int):
         raise HTTPException(status_code=500, detail="Internal Server Error")
     finally:
         conn.commit()
+
+@user.get("/users/{email}/{password}", response_model=User, tags=["Users"])
+def get_user_by_email_password(email: str, password: str):
+    try:
+        user = conn.execute(users.select().where(users.c.email == email).where(users.c.password == password)).first()
+        if user is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+            )
+        return user
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+    finally:
+        conn.commit()
