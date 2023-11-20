@@ -13,6 +13,7 @@ banks = Table(
     Column("anual_desgravamen_insurance_percent", Float),
     Column("anual_vehicle_insurance_percent", Float),
     Column("oficial_page", String(255)),
+    Column("TEA_USD", Float),
 )
 
 meta.create_all(engine)
