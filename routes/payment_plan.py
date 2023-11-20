@@ -120,12 +120,6 @@ def create_payment_plan(payment_plan: PaymentPlan):
                 12 / payment_plan.payment_frequency
             )
 
-            if payment_plan.currency == "USD":
-                bank_TEA = get_bank_TEA_USD(payment_plan.bank_id)
-                payment_plan.TEA = bank_TEA
-            else:
-                bank_TEA = get_bank_TEA(payment_plan.bank_id)
-                payment_plan.TEA = bank_TEA
 
             check_grace_periods(
                 payment_plan.total_periods,
