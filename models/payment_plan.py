@@ -29,6 +29,9 @@ payment_plans = Table(
     Column("desgravamen_percent_by_freq", Float),
     Column("vehicle_insurance_amount", Float),
     Column("physical_account_statement", Integer, default=0),
+    Column("VNA", Float),
+    Column("TIR", Float),
+    Column("TCEA", Float),
 )
 
 meta.create_all(engine)

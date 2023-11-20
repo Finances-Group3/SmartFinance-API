@@ -86,6 +86,12 @@ def create_payment_plan(payment_plan: PaymentPlan):
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail="Bank ID does not exist in the database",
                 )
+            
+            if payment_plan.initial_fee_percent <= 0.0:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Initial fee percent cannot be zero or negative",
+                )
 
             if payment_plan.TNA == 0.0 and payment_plan.TEA == 0.0:
                 raise HTTPException(
@@ -126,6 +132,14 @@ def create_payment_plan(payment_plan: PaymentPlan):
             )
 
             bank_desgravamen_percent = get_degravamen_percent(payment_plan.bank_id)
+            
+            if bank_desgravamen_percent != 0.0:
+                payment_plan.desgravamen_percent_by_freq = bank_desgravamen_percent * (
+                    payment_plan.payment_frequency / 12
+                )
+            else:
+                payment_plan.desgravamen_percent_by_freq = 0.0
+
 
             payment_plan.desgravamen_percent_by_freq = bank_desgravamen_percent * (
                 payment_plan.payment_frequency / 12
@@ -172,6 +186,9 @@ def create_payment_plan(payment_plan: PaymentPlan):
                 "desgravamen_percent_by_freq": payment_plan.desgravamen_percent_by_freq,
                 "vehicle_insurance_amount": payment_plan.vehicle_insurance_amount,
                 "physical_account_statement": payment_plan.physical_account_statement,
+                "VNA": 0,
+                "TIR": 0,
+                "TCEA": 0,
             }
 
             result = conn.execute(payment_plans.insert().values(new_payment_plan))
@@ -277,7 +294,6 @@ def update_payment_plan(id: int, payment_plan: PaymentPlan):
         conn.commit()
         return result
 
-
 @payment_plan.delete(
     "/payment_plans/{id}",
     status_code=status.HTTP_204_NO_CONTENT,
@@ -315,6 +331,8 @@ def get_payment_details(id: int):
         else:
             portes = 0
 
+        cashflows = []
+
         payment_details = algorithms.get_all_flujos(
             0,
             [],
@@ -328,6 +346,27 @@ def get_payment_details(id: int):
             payment_plan.parcial_grace_periods,
             portes,
         )
+
+        for payment_detail in payment_details:
+            cashflows.append(payment_detail.flujo)
+
+        new_VAN = algorithms.get_VAN(payment_plan.changed_TE, payment_plan.funding_amount, 
+                                 len(cashflows), cashflows)
+        
+        new_TIR = algorithms.get_TIR(payment_plan.funding_amount, payment_plan.total_periods, cashflows)
+
+        new_TCEA = (1+new_TIR)**(12/payment_plan.payment_frequency) - 1
+
+        conn.execute(
+            payment_plans.update()
+            .where(payment_plans.c.id == id)
+            .values(
+                VNA=new_VAN,
+                TIR=new_TIR,
+                TCEA=new_TCEA
+            )
+        )
+        
     except Exception as e:
         conn.rollback()
         raise HTTPException(status_code=500, detail="Internal Server Error")

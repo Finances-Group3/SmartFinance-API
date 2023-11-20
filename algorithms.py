@@ -48,8 +48,6 @@ def get_fixed_fee_pg(
     )
     return fixed_fee
 
-
-
 # Hallar todos los flujos
 def get_all_flujos(
     nro_cuota,
@@ -62,7 +60,7 @@ def get_all_flujos(
     vehicular_insurance_amount,
     pg_total=0,
     pg_parcial=0,
-    _portes = 0
+    _portes = 10
 ):
     saldo_inicial = funding_amount
     interes = saldo_inicial * changed_TE
@@ -111,6 +109,7 @@ def get_all_flujos(
             vehicular_insurance_amount,
             pg_total,
             pg_parcial,
+            portes
         )
 
     if pg_parcial > 0:
@@ -150,6 +149,7 @@ def get_all_flujos(
             vehicular_insurance_amount,
             pg_total,
             pg_parcial,
+            portes
         )
 
     payment = PaymentDetail(
@@ -176,7 +176,40 @@ def get_all_flujos(
             fixed_fee,
             degravamen_percent,
             vehicular_insurance_amount,
+            0,
+            0,
+            portes
         )
     else:
         return todos_los_flujos
+
+
+def get_VAN(TEA, funding_amount, total_periods, cashflow):
+    VAN = funding_amount 
+    for i in range(total_periods):
+        VAN += (cashflow[i]*-1)/((1+TEA)**(i+1))
+    return VAN
+
+
+def get_TIR(funding_amount, total_periods, cashflow, tolerance=1e-6, max_iterations=1000):
+    rate_low = 0.0
+    rate_high = 1.0
+    irr = 0.0
+
+    for _ in range(max_iterations):
+        rate_mid = (rate_low + rate_high) / 2
+        npv = funding_amount * -1
+        for i in range(total_periods):
+            npv += cashflow[i] / ((1 + rate_mid) ** (i + 1))
+
+        if abs(npv) < tolerance:
+            irr = rate_mid
+            break
+
+        if npv > 0:
+            rate_low = rate_mid
+        else:
+            rate_high = rate_mid
+
+    return irr
 
