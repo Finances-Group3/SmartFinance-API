@@ -41,6 +41,9 @@ def get_bank_TEA(bank_id: int):
     bank = conn.execute(banks.select().where(banks.c.id == bank_id)).first()
     return bank.TEA
 
+def get_bank_TEA_USD(bank_id: int):
+    bank = conn.execute(banks.select().where(banks.c.id == bank_id)).first()
+    return bank.TEA_USD
 
 def get_degravamen_percent(bank_id: int):
     bank = conn.execute(banks.select().where(banks.c.id == bank_id)).first()
@@ -117,9 +120,6 @@ def create_payment_plan(payment_plan: PaymentPlan):
                 12 / payment_plan.payment_frequency
             )
 
-            bank_TEA = get_bank_TEA(payment_plan.bank_id)
-            if bank_TEA != 0.0:
-                payment_plan.TEA = bank_TEA
 
             check_grace_periods(
                 payment_plan.total_periods,
