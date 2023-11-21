@@ -1,12 +1,13 @@
 from fastapi import APIRouter, HTTPException, status
 from config.db import conn
+from sqlalchemy import create_engine, select
 from models.payment_plan import payment_plans
 from models.bank import banks
 import algorithms
 
 from schemas.payment_plan import PaymentPlan
 from typing import List
-
+import config.db as db
 
 def check_bank_exists(bank_id: int):
     bank = conn.execute(banks.select().where(banks.c.id == bank_id)).first()
@@ -49,11 +50,9 @@ def get_degravamen_percent(bank_id: int):
     bank = conn.execute(banks.select().where(banks.c.id == bank_id)).first()
     return bank.anual_desgravamen_insurance_percent
 
-
 def get_portes(bank_id: int):
     bank = conn.execute(banks.select().where(banks.c.id == bank_id)).first()
     return bank.portes
-
 
 def get_vehicle_insurance_percent(bank_id: int):
     bank = conn.execute(banks.select().where(banks.c.id == bank_id)).first()
@@ -67,17 +66,13 @@ payment_plan = APIRouter()
     "/payment_plans", response_model=List[PaymentPlan], tags=["Payment Plans"]
 )
 def get_all_payment_plans():
-    try:
-        return conn.execute(payment_plans.select()).fetchall()
-    except Exception as e:
-        conn.rollback()
-        raise HTTPException(status_code=500, detail="Internal Server Error")
-
+    with db.engine.connect() as conn:
+        return conn.execute(payment_plans.select()).fetchall()   
 
 @payment_plan.post("/payment_plans", response_model=PaymentPlan, tags=["Payment Plans"])
 def create_payment_plan(payment_plan: PaymentPlan):
-    try:
-        with conn.begin() as transaction:
+    with db.engine.connect() as conn:
+        try:
             if payment_plan.vehicle_price <= 0.0:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
@@ -191,48 +186,31 @@ def create_payment_plan(payment_plan: PaymentPlan):
                 "TCEA": 0,
             }
 
+            conn.commit()
+
             result = conn.execute(payment_plans.insert().values(new_payment_plan))
             return conn.execute(
                 payment_plans.select().where(payment_plans.c.id == result.lastrowid)
             ).first()
+        
 
-    except Exception as e:
-        conn.rollback()
-        raise HTTPException(status_code=500, detail="Internal Server Error")
-
+        except Exception as e:
+            conn.rollback()
+            raise HTTPException(status_code=500, detail="Internal Server Error")
 
 @payment_plan.get(
     "/payment_plans/{id}", response_model=PaymentPlan, tags=["Payment Plans"]
 )
 def get_payment_plan_by_id(id: int):
-    try:
-        return conn.execute(
-            payment_plans.select().where(payment_plans.c.id == id)
-        ).first()
-    except Exception as e:
-        conn.rollback()
-        raise HTTPException(status_code=500, detail="Internal Server Error")
-
+    with db.engine.connect() as conn:
+        return conn.execute(select(payment_plans).where(payment_plans.c.id == id)).first()
 
 @payment_plan.get(
     "/payment_plans/user/{id}", response_model=List[PaymentPlan], tags=["Payment Plans"]
 )
 def get_payment_plan_by_user(id: int):
-    try:
-        payment_plan = conn.execute(
-            payment_plans.select().where(payment_plans.c.user_id == id)
-        ).fetchall()
-        if payment_plan is None:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Payment Plan not found"
-            )
-    except Exception as e:
-        conn.rollback()
-        raise HTTPException(status_code=500, detail="Internal Server Error")
-    finally:
-        conn.commit()
-        return payment_plan
-
+    with db.engine.connect() as conn:
+        return conn.execute(select(payment_plans).where(payment_plans.c.user_id == id)).fetchall()
 
 @payment_plan.get(
     "/payment_plans/user/{user_id}/bank/{bank_id}",
@@ -253,10 +231,6 @@ def get_payment_plan_by_user_and_bank(user_id: int, bank_id: int):
     except Exception as e:
         conn.rollback()
         raise HTTPException(status_code=500, detail="Internal Server Error")
-    finally:
-        conn.commit()
-        return payment_plan
-
 
 # Falta actualizar el PUT con los nuevos campos
 @payment_plan.put(
@@ -300,21 +274,17 @@ def update_payment_plan(id: int, payment_plan: PaymentPlan):
     tags=["Payment Plans"],
 )
 def delete_payment_plan(id: int):
-    try:
-        deleted = conn.execute(payment_plans.delete().where(payment_plans.c.id == id))
-        if deleted.rowcount == 0:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Payment Plan not found"
-            )
-    except Exception as e:
-        conn.rollback()
-        raise HTTPException(status_code=500, detail="Internal Server Error")
-    finally:
-        conn.commit()
-        return {"message": "Payment Plan with id {} deleted successfully!".format(id)}
-
-
-
+    with db.engine.connect() as conn:
+        try:
+            result = conn.execute(payment_plans.delete().where(payment_plans.c.id == id))
+            if result.rowcount == 0:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Payment Plan not found")
+            conn.commit()
+            return {"message": "Payment Plan with id {} deleted successfully!".format(id)}
+        except Exception as e:
+            conn.rollback()
+            raise HTTPException(status_code=500, detail=str(e))
+        
 @payment_plan.get("/payment_plans/{id}/payment_details", tags=["Payment Plans"])
 def get_payment_details(id: int):
     try:
