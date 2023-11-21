@@ -16,6 +16,9 @@ app = FastAPI(
 
 origins = [
     "https://smart-finanze.netlify.app",
+    "http://localhost",
+    "http://localhost:4200",
+    "https://main--smart-finanze.netlify.app",
 ]
 
 app.add_middleware(
