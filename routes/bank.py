@@ -31,6 +31,7 @@ def create_bank(bank: Bank):
                 "anual_desgravamen_insurance_percent": bank.anual_desgravamen_insurance_percent,
                 "anual_vehicle_insurance_percent": bank.anual_vehicle_insurance_percent,
                 "oficial_page": bank.oficial_page,
+                "TEA_USD": bank.TEA_USD,
             }
             result = conn.execute(banks.insert().values(new_bank))
             created_bank = conn.execute(banks.select().where(banks.c.id == result.lastrowid)).first()
@@ -71,6 +72,7 @@ def update_bank(id: int, bank: Bank):
                     anual_desgravamen_insurance_percent=bank.anual_desgravamen_insurance_percent,
                     anual_vehicle_insurance_percent=bank.anual_vehicle_insurance_percent,
                     oficial_page=bank.oficial_page,
+                    TEA_USD=bank.TEA_USD,
                 )
             )
             updated_bank = conn.execute(banks.select().where(banks.c.id == id)).first()

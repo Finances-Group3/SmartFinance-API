@@ -17,7 +17,7 @@ class PaymentPlan(BaseModel):
     bank_id: int
     user_id: int
     funding_amount: float  = 0.0
-    total_periods: int   = 0.0# total_periods = anual_payment_periods * 12/payment_frequency
+    total_periods: int   = 0.0
     changed_TE: float   = 0.0
     fixed_fee: float = 0.0
     desgravamen_percent_by_freq: float = 0.0

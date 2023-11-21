@@ -3,18 +3,16 @@ from config.db import conn
 from models.user import users
 from schemas.user import User
 from typing import List
+from fastapi import Depends
+import config.db as db
+
 
 user = APIRouter()
 
 @user.get("/users", response_model=List[User], tags=["Users"])
 def get_all_users():
-    try:
+    with db.engine.connect() as conn:
         return conn.execute(users.select()).fetchall()
-    except Exception as e:
-        conn.rollback()
-        raise HTTPException(status_code=500, detail="Internal Server Error")
-    finally:
-        conn.commit()
 
 @user.post("/users", response_model=User, tags=["Users"])
 def create_user(user: User):
@@ -40,8 +38,7 @@ def get_user(id: int):
     except Exception as e:
         conn.rollback()
         raise HTTPException(status_code=500, detail="Internal Server Error")
-    finally:
-        conn.commit()
+
 
 @user.put("/users/{id}", response_model=User, tags=["Users"])
 def update_user(id: int, user: User):
@@ -81,5 +78,3 @@ def get_user_by_email_password(email: str, password: str):
     except Exception as e:
         conn.rollback()
         raise HTTPException(status_code=500, detail="Internal Server Error")
-    finally:
-        conn.commit()
